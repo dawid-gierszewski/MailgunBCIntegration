@@ -24,7 +24,7 @@ table 50101 "Mailgun Setup"
         {
             DataClassification = CustomerContent;
             Caption = 'API Endpoint';
-            InitValue = 'https://api.mailgun.net/v3';
+            InitValue = 'https://api.eu.mailgun.net/v3/';
         }
     }
 

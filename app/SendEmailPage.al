@@ -57,8 +57,6 @@ page 50102 "Send Email via Mailgun"
                 PromotedIsBig = true;
 
                 trigger OnAction()
-                var
-                    MailgunEmailSender: Codeunit "Mailgun Email Sender";
                 begin
                     if FromEmail = '' then
                         Error('From email address is required.');
@@ -89,7 +87,17 @@ page 50102 "Send Email via Mailgun"
         }
     }
 
+    trigger OnOpenPage()
+    begin
+        FromEmail := 'test@example.com';
+        ToEmail := 'test@example.com';
+        SubjectText := 'Test Subject';
+        BodyText := 'Test Body';
+        //MailgunEmailSender.SendEmail(FromEmail, ToEmail, SubjectText, BodyText);
+    end;
+
     var
+        MailgunEmailSender: Codeunit "Mailgun Email Sender";
         FromEmail: Text[250];
         ToEmail: Text[250];
         SubjectText: Text[250];

@@ -22,8 +22,15 @@ codeunit 50100 "Mailgun Email Sender"
         if MailgunSetup."Domain Name" = '' then
             Error('Domain Name is not configured in Mailgun Setup.');
 
-        // Build URL
-        UrlText := MailgunSetup."API Endpoint" + '/' + MailgunSetup."Domain Name" + '/messages';
+        // Build URL - ensure proper formatting
+        // Expected format: https://api.mailgun.net/v3/{domain}/messages
+        UrlText := MailgunSetup."API Endpoint";
+        // Remove trailing slash from API Endpoint if present
+        if StrLen(UrlText) > 0 then
+            if CopyStr(UrlText, StrLen(UrlText), 1) = '/' then
+                UrlText := CopyStr(UrlText, 1, StrLen(UrlText) - 1);
+        // Construct full URL
+        UrlText := UrlText + '/' + MailgunSetup."Domain Name" + '/messages';
 
         // Create content
         Content.WriteFrom('from=' + EncodeUrl(FromEmail) + '&to=' + EncodeUrl(ToEmail) + '&subject=' + EncodeUrl(Subject) + '&text=' + EncodeUrl(Body));
@@ -48,10 +55,12 @@ codeunit 50100 "Mailgun Email Sender"
         // Check response
         if not ResponseMessage.IsSuccessStatusCode() then begin
             ResponseMessage.Content.ReadAs(ResponseText);
-            Error('Failed to send email. Status Code: %1. Response: %2', ResponseMessage.HttpStatusCode(), ResponseText);
+            Error('Failed to send email. Status Code: %1. Response: %2. URL: %3', ResponseMessage.HttpStatusCode(), ResponseText, UrlText);
         end;
 
         Message('Email sent successfully!');
+        ResponseMessage.Content.ReadAs(ResponseText);
+        Message(ResponseText);
         exit(true);
     end;
 
@@ -64,8 +73,11 @@ codeunit 50100 "Mailgun Email Sender"
 
     local procedure EncodeBase64(TextToEncode: Text): Text
     var
-        Base64Convert: Codeunit "Base64 Convert";
+        TempBlob: Record "TempBlob" temporary;
+        OutStream: OutStream;
     begin
-        exit(Base64Convert.ToBase64(TextToEncode));
+        TempBlob.Blob.CreateOutStream(OutStream);
+        OutStream.WriteText(TextToEncode);
+        exit(TempBlob.ToBase64String());
     end;
 }
