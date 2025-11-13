@@ -59,8 +59,6 @@ codeunit 50100 "Mailgun Email Sender"
         end;
 
         Message('Email sent successfully!');
-        ResponseMessage.Content.ReadAs(ResponseText);
-        Message(ResponseText);
         exit(true);
     end;
 
